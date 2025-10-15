@@ -1,0 +1,106 @@
+/* General body styles for the dark theme */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #282c34;
+  color: white;
+}
+
+/* Main app container */
+.App {
+  text-align: center;
+}
+
+/* Header/main content area */
+.App-header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+}
+
+h1 {
+  font-weight: 300;
+  margin-bottom: 40px;
+}
+
+/* Form container for the input and button */
+.chat-form {
+  display: flex;
+  gap: 10px; /* Space between input and button */
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 30px;
+}
+
+/* Text input field */
+.chat-form input[type="text"] {
+  flex-grow: 1; /* Take up available space */
+  border: 1px solid #4a4f58;
+  background-color: #3c4049;
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  outline: none; /* Remove default browser outline */
+  transition: border-color 0.2s;
+}
+
+.chat-form input[type="text"]:focus {
+  border-color: #61dafb; /* Highlight on focus */
+}
+
+/* Submit button */
+.chat-form button {
+  background-color: #61dafb; /* A nice blue color */
+  color: #282c34;
+  border: none;
+  padding: 0 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-form button:hover {
+  background-color: #52b8d8;
+}
+
+/* Style for the button when it's disabled (loading) */
+.chat-form button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+/* Container for the answer from the chatbot */
+.answer-container {
+  background-color: #3c4049;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 560px; /* Slightly narrower than the form */
+  text-align: left;
+  line-height: 1.6;
+  font-size: 16px;
+  white-space: pre-wrap; /* Preserve line breaks from the response */
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Simple fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
