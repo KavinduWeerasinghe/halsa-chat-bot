@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
+// 1. Get the API URL from the environment variable
+const API_URL = process.env.REACT_APP_API_URL;
+
 function App() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -13,14 +16,15 @@ function App() {
   };
 
   const handleSubmit = (event) => {
-    event.preventDefault(); // Prevent page reload
-    if (!question.trim()) return; // Don't send empty questions
+    event.preventDefault();
+    if (!question.trim()) return;
 
     setIsLoading(true);
     setAnswer('');
 
-    // Send question to the backend API
-    axios.post('http://127.0.0.1:8000/query', { question: question })
+    // 2. Use the API_URL variable here.
+    //    Note: The endpoint in your code is '/query'. Make sure this matches your backend.
+    axios.post(`${API_URL}/query`, { question: question })
       .then(response => {
         if (response.data.answer) {
           setAnswer(response.data.answer);
