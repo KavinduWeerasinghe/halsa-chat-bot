@@ -1,0 +1,6 @@
+fastapi~=0.119.0
+pydantic~=2.12.2
+langchain-openai~=0.3.35
+langchain-community~=0.3.31
+langchain-core~=0.3.79
+langchain~=0.3.27
