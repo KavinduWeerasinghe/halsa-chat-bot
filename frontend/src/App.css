@@ -104,3 +104,20 @@ h1 {
     transform: translateY(0);
   }
 }
+
+/* In App.css */
+.stats-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #3a3f4a; /* A slightly lighter shade */
+  border-radius: 8px;
+  border: 1px solid #4a4f5a;
+  font-size: 0.9em;
+  text-align: left;
+  max-width: 600px;
+  width: 100%;
+}
+
+.stats-container p {
+  margin: 5px 0;
+}

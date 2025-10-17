@@ -3,13 +3,17 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-// 1. Get the API URL from the environment variable
 const API_URL = process.env.REACT_APP_API_URL;
 
 function App() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // 1. Add state for timing data
+  const [totalTime, setTotalTime] = useState(null);
+  const [apiTime, setApiTime] = useState(null);
+  const [networkLag, setNetworkLag] = useState(null);
 
   const handleQuestionChange = (event) => {
     setQuestion(event.target.value);
@@ -20,17 +24,28 @@ function App() {
     if (!question.trim()) return;
 
     setIsLoading(true);
+    // Clear previous results
     setAnswer('');
+    setTotalTime(null);
+    setApiTime(null);
+    setNetworkLag(null);
 
-    // 2. Use the API_URL variable here.
-    //    Note: The endpoint in your code is '/query'. Make sure this matches your backend.
+    // 2. Start the timer for the total request
+    const startTime = performance.now();
+
     axios.post(`${API_URL}/query`, { question: question })
       .then(response => {
-        if (response.data.answer) {
-          setAnswer(response.data.answer);
-        } else {
-          setAnswer('Sorry, there was an error processing your question.');
-        }
+        // 3. Calculate all times when the response is received
+        const endTime = performance.now();
+        const totalDuration = (endTime - startTime) / 1000; // in seconds
+        const apiDuration = response.data.processing_time;
+        const lag = totalDuration - apiDuration;
+
+        // 4. Update state with the answer and timing data
+        setAnswer(response.data.answer);
+        setTotalTime(totalDuration);
+        setApiTime(apiDuration);
+        setNetworkLag(lag);
       })
       .catch(error => {
         console.error("API call failed:", error);
@@ -61,6 +76,15 @@ function App() {
         {answer && (
           <div className="answer-container">
             <p>{answer}</p>
+          </div>
+        )}
+
+        {/* 5. Render the timing data if it exists */}
+        {totalTime !== null && (
+          <div className="stats-container">
+            <p><strong>Total Response:</strong> {totalTime.toFixed(2)}s</p>
+            <p><strong>API Processing:</strong> {apiTime.toFixed(2)}s</p>
+            <p><strong>Network Latency:</strong> {networkLag.toFixed(2)}s</p>
           </div>
         )}
       </header>
