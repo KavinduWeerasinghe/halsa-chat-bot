@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React, { useState } from 'react';
-import axios from 'axios';
+// We no longer need axios for this component
 import './App.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -10,50 +10,67 @@ function App() {
   const [answer, setAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. Add state for timing data
+  // New state for streaming-specific timing
+  const [timeToFirstToken, setTimeToFirstToken] = useState(null);
   const [totalTime, setTotalTime] = useState(null);
-  const [apiTime, setApiTime] = useState(null);
-  const [networkLag, setNetworkLag] = useState(null);
 
   const handleQuestionChange = (event) => {
     setQuestion(event.target.value);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!question.trim()) return;
 
     setIsLoading(true);
-    // Clear previous results
     setAnswer('');
+    setTimeToFirstToken(null);
     setTotalTime(null);
-    setApiTime(null);
-    setNetworkLag(null);
 
-    // 2. Start the timer for the total request
     const startTime = performance.now();
+    let firstTokenTime = null;
 
-    axios.post(`${API_URL}/query`, { question: question })
-      .then(response => {
-        // 3. Calculate all times when the response is received
-        const endTime = performance.now();
-        const totalDuration = (endTime - startTime) / 1000; // in seconds
-        const apiDuration = response.data.processing_time;
-        const lag = totalDuration - apiDuration;
-
-        // 4. Update state with the answer and timing data
-        setAnswer(response.data.answer);
-        setTotalTime(totalDuration);
-        setApiTime(apiDuration);
-        setNetworkLag(lag);
-      })
-      .catch(error => {
-        console.error("API call failed:", error);
-        setAnswer('Failed to connect to the backend. Is the server running?');
-      })
-      .finally(() => {
-        setIsLoading(false);
+    try {
+      const response = await fetch(`${API_URL}/query-stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: question }),
       });
+
+      if (!response.body) return;
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          // Stream finished
+          const endTime = performance.now();
+          setTotalTime((endTime - startTime) / 1000); // in seconds
+          break;
+        }
+
+        // Measure time to first token
+        if (firstTokenTime === null) {
+            firstTokenTime = performance.now();
+            setTimeToFirstToken((firstTokenTime - startTime) / 1000); // in seconds
+        }
+
+        const chunk = decoder.decode(value);
+
+        console.log("Received chunk:", chunk);
+
+        setAnswer((prevAnswer) => prevAnswer + chunk);
+      }
+
+    } catch (error) {
+      console.error("Streaming failed:", error);
+      setAnswer('Failed to connect to the backend streamer. Is the server running?');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -79,12 +96,11 @@ function App() {
           </div>
         )}
 
-        {/* 5. Render the timing data if it exists */}
+        {/* Render the new timing data */}
         {totalTime !== null && (
           <div className="stats-container">
-            <p><strong>Total Response:</strong> {totalTime.toFixed(2)}s</p>
-            <p><strong>API Processing:</strong> {apiTime.toFixed(2)}s</p>
-            <p><strong>Network Latency:</strong> {networkLag.toFixed(2)}s</p>
+            <p><strong>Time to First Token:</strong> {timeToFirstToken.toFixed(2)}s</p>
+            <p><strong>Total Generation Time:</strong> {totalTime.toFixed(2)}s</p>
           </div>
         )}
       </header>
